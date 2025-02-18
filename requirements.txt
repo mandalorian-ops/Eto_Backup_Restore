@@ -1,0 +1,5 @@
+boto3
+pyodbc
+logging
+subprocess
+configparser
