@@ -8,10 +8,10 @@ from utils.db_utils import (
 )
 
 # ======================
-# ? Required Functions Checklist
-# 1?? configure_logging() - Configures logging for the script
-# 2?? force_restore_mode(cursor, database_name, backup_path) - Ensures no active connections before transitioning to RESTORING mode
-# 3?? restore_database() - Orchestrates the database restoration process
+# Required Functions Checklist
+# 1. configure_logging() - Configures logging for the script
+# 2. force_restore_mode(cursor, database_name, backup_path) - Ensures no active connections before transitioning to RESTORING mode
+# 3. restore_database() - Orchestrates the database restoration process
 # ======================
 
 # Load configuration
@@ -21,7 +21,7 @@ dsn = "DSN=ETO_DSN"
 database_name = "ETO"
 s3_bucket_name = "ssg-etobphc"
 
-# 1?? Configure Logging Function
+# 1 Configure Logging Function
 def configure_logging():
     """
     Configures logging for the script.
@@ -33,7 +33,7 @@ def configure_logging():
     )
     logging.info("? Logging initialized successfully.")
 
-# 2?? Force Restore Mode Function
+# 2 Force Restore Mode Function
 def force_restore_mode(cursor, database_name, backup_path):
     """
     Ensures no active connections exist before transitioning the database into RESTORING mode.
@@ -61,18 +61,12 @@ def force_restore_mode(cursor, database_name, backup_path):
 
                 time.sleep(5)  # Allow SQL Server to process kill commands
 
-            # Ensure MULTI_USER mode before forcing SINGLE_USER mode
-            # logging.info(f"?? Ensuring database {database_name} is in MULTI_USER mode before proceeding...")
-            # cursor.execute(f"ALTER DATABASE [{database_name}] SET MULTI_USER;")
-            # time.sleep(2)  
-
             logging.info(f"?? Switching database {database_name} to SINGLE_USER mode for restore...")
             cursor.execute(f"ALTER DATABASE [{database_name}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;")
             time.sleep(2)
+
             # print this line to check error checkpoint
             print("Checkpoint 1")
-
-
 
             # Verify if SINGLE_USER mode was successfully set
             cursor.execute(f"SELECT state_desc FROM sys.databases WHERE name = '{database_name}'")
@@ -80,21 +74,14 @@ def force_restore_mode(cursor, database_name, backup_path):
             if new_state == "SINGLE_USER":
                 break  # Exit loop if successful
             # print this line to check error checkpoint
-            print("Checkpoint 2")
-
-        #print(new_state)
-        #if new_state != "SINGLE_USER":
-            #logging.error(f"? Failed to set {database_name} to SINGLE_USER mode after 3 attempts. Restore cannot proceed.")
-            #raise RuntimeError(f"Database {database_name} did not transition to SINGLE_USER mode.")
-	# print this line to check error checkpoint
-        #print("Checkpoint 3") 
+            print("Checkpoint 2") 
 
         # Restore database into RESTORING mode
         logging.info(f"?? Restoring FULL backup from {backup_path}...")
         cursor.execute(f"RESTORE DATABASE [{database_name}] FROM DISK = '{backup_path}' WITH NORECOVERY, REPLACE;")
-	# print this line to check error checkpoint
-        print("Checkpoint 4")
 
+        # print this line to check error checkpoint
+        print("Checkpoint 3")
 
         # Ensure the database transitions correctly
         if not wait_for_database(cursor, database_name, expected_state="RESTORING"):
