@@ -149,8 +149,8 @@ Ensures the latest FULL and DIFF restores were applied.**
 ---
 
 ## **7. Required Actions**  
-### **Immediate Next Steps for the Data Engineer**
-*Test Running the Restore Script from Scratch**  
+### **Immediate Next Steps for Troubleshooting**
+**Test Running the Restore Script from Scratch**  
 - Drop the `ETO` database using the SQL commands above.  
 - Run:
   ```powershell
